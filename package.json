@@ -3,13 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node ./dbTest.js && next dev",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
+    "axios": "^0.20.0",
     "next": "9.5.3",
     "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react-dom": "16.13.1",
+    "sqlite": "^4.0.15",
+    "sqlite3": "^5.0.0",
+    "swr": "^0.3.5"
+  },
+  "devDependencies": {
+    "@types/node": "^14.11.2",
+    "@types/react": "^16.9.50",
+    "typescript": "^4.0.3"
   }
 }
