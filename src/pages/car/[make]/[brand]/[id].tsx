@@ -91,7 +91,7 @@ export default CarPage;
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const id = ctx.params?.id;
-  console.log("id", id);
+  // console.log("id", id);
   const db = await openDB();
   const car = await db.get<CarModel | undefined>(
     "SELECT * FROM Car where id=?",
