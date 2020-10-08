@@ -17,7 +17,7 @@ import { useRouter } from "next/router";
 // import Head from "next/head";
 import React from "react";
 import useSWR from "swr";
-// import styles from "../../styles/Home.module.css";
+// import styles from "../../styles/Search.module.css";
 import getMakes, { Make } from "../components/database/getMakes";
 import getModels, { Model } from "../components/database/getModels";
 import { getAsString } from "../getAsString";
@@ -39,17 +39,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface HomeProps {
+interface SearchProps {
   makes: Make[];
   models: Model[];
+  singleColumn?: boolean;
 }
 
 const prices = [500, 1000, 5000, 15000, 25000, 50000];
 
-export default function Home({ makes, models }: HomeProps) {
+export default function Search({ makes, models, singleColumn }: SearchProps) {
   const router = useRouter();
   const classes = useStyles();
   const { query } = useRouter();
+  const smValue = singleColumn ? 12 : 6;
   const initialValues = {
     make: getAsString(query.make) || "all",
     model: getAsString(query.model) || "all",
@@ -61,7 +63,7 @@ export default function Home({ makes, models }: HomeProps) {
       initialValues={initialValues}
       onSubmit={(values) => {
         router.push(
-          { pathname: "/", query: { ...values, page: 1 } },
+          { pathname: "/cars", query: { ...values, page: 1 } },
           undefined,
           { shallow: true }
         );
@@ -71,10 +73,10 @@ export default function Home({ makes, models }: HomeProps) {
         <Form>
           <Paper elevation={5} className={classes.paper}>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={smValue}>
                 <FormControl
                   variant="outlined"
-                  // fullwidth="true"
+                  fullWidth
                   className={classes.formControl}
                 >
                   <InputLabel id="searchMake">Make</InputLabel>
@@ -98,13 +100,13 @@ export default function Home({ makes, models }: HomeProps) {
                   </Field>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={smValue}>
                 <ModelSelect make={values.make} name="model" models={models} />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={smValue}>
                 <FormControl
                   variant="outlined"
-                  // fullwidth="true"
+                  fullWidth
                   className={classes.formControl}
                 >
                   <InputLabel id="searchMinPrice">Min.Price</InputLabel>
@@ -128,10 +130,10 @@ export default function Home({ makes, models }: HomeProps) {
                   </Field>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={smValue}>
                 <FormControl
                   variant="outlined"
-                  // fullwidth="true"
+                  fullWidth
                   className={classes.formControl}
                 >
                   <InputLabel id="searchMaxPrice">Max.Price</InputLabel>
@@ -184,6 +186,7 @@ export function ModelSelect({ make, models, ...props }: ModelSelectProps) {
   const classes = useStyles();
   const [field] = useField({ name: props.name });
   const { data } = useSWR<Model[]>("/api/models?make=" + make, {
+    dedupingInterval: 60000,
     onSuccess: (newValues) => {
       if (!newValues.map((value) => value.model).includes(field.value)) {
         // we want to make this field.value = 'All'
@@ -193,7 +196,7 @@ export function ModelSelect({ make, models, ...props }: ModelSelectProps) {
   });
   const newModels = data || models;
   return (
-    <FormControl variant="outlined" className={classes.formControl}>
+    <FormControl variant="outlined" className={classes.formControl} fullWidth>
       <InputLabel id="searchModel">Model</InputLabel>
       <Select
         labelId="searchModel"
