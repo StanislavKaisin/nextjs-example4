@@ -16,6 +16,7 @@ import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 // import Head from "next/head";
 import React from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 // import styles from "../../styles/Search.module.css";
 import getMakes, { Make } from "../components/database/getMakes";
@@ -58,6 +59,7 @@ export default function Search({ makes, models, singleColumn }: SearchProps) {
     minPrice: getAsString(query.minPrice) || "all",
     maxPrice: getAsString(query.maxPrice) || "all",
   };
+
   return (
     <Formik
       initialValues={initialValues}
@@ -187,14 +189,19 @@ export function ModelSelect({ make, models, ...props }: ModelSelectProps) {
   const [field] = useField({ name: props.name });
   const { data } = useSWR<Model[]>("/api/models?make=" + make, {
     dedupingInterval: 60000,
-    onSuccess: (newValues) => {
-      if (!newValues.map((value) => value.model).includes(field.value)) {
-        // we want to make this field.value = 'All'
-        setFieldValue("model", "all");
-      }
-    },
+    // onSuccess: (newValues) => {
+    //   if (!newValues.map((value) => value.model).includes(field.value)) {
+    //     // we want to make this field.value = 'All'
+    //     setFieldValue("model", "all");
+    //   }
+    // },
   });
   const newModels = data || models;
+  useEffect(() => {
+    if (!newModels?.map((a) => a.model).includes(field.value)) {
+      setFieldValue("model", "all");
+    }
+  }, [make, newModels]);
   return (
     <FormControl variant="outlined" className={classes.formControl} fullWidth>
       <InputLabel id="searchModel">Model</InputLabel>
