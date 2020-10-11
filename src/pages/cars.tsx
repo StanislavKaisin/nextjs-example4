@@ -1,4 +1,4 @@
-import { Grid } from "@material-ui/core";
+import { Grid, Paper, Typography } from "@material-ui/core";
 import { GetServerSideProps } from "next";
 import React, { useState } from "react";
 import Search from ".";
@@ -16,6 +16,7 @@ import useSWR from "swr";
 import deepEqual from "fast-deep-equal";
 import CarPagination from "../components/CarPagination";
 import CarCard from "../components/CarCard";
+import { Skeleton } from "@material-ui/lab";
 
 interface carsProps {
   makes: Make[];
@@ -23,11 +24,12 @@ interface carsProps {
   cars: CarModel[];
   totalPages: number;
   serverQuery: ParsedUrlQuery;
+  loading: boolean;
 }
 
-const cars = ({ makes, models, cars, totalPages }: carsProps) => {
+const cars = ({ makes, models, cars, totalPages, loading }: carsProps) => {
   const { query } = useRouter();
-  // console.log("query.page", query.page);
+  // console.log("loading", loading);
   const [serverQuery] = useState(query);
   const { data } = useSWR("/api/cars?" + stringify(query), {
     dedupingInterval: 15000,
@@ -42,17 +44,27 @@ const cars = ({ makes, models, cars, totalPages }: carsProps) => {
       <Grid item xs={12} sm={12} md={6} lg={4}>
         <Search makes={makes} models={models} singleColumn />
       </Grid>
-      <Grid item xs={12} sm={12} md={6} lg={8}>
-        <CarPagination totalPages={totalPages} query={query} />
-        {/* <pre style={{ fontSize: "1rem" }}> */}
-        {/* {JSON.stringify({ totalPages, cars }, null, 2)} */}
-        {/* {JSON.stringify(data, null, 2)} */}
-        {/* </pre> */}
-        {cars.map((car) => {
-          return <CarCard car={car} key={car.id} />;
-        })}
-        <CarPagination totalPages={totalPages} query={query} />
-      </Grid>
+      {data?.totalPages ? (
+        <Grid item xs={12} sm={12} md={6} lg={8} container spacing={5}>
+          <Grid item xs={12}>
+            <CarPagination totalPages={data?.totalPages} query={query} />
+          </Grid>
+          {(data?.cars || []).map((car) => {
+            return (
+              <Grid item xs={12} sm={6} key={car.id}>
+                <CarCard car={car} />
+              </Grid>
+            );
+          })}
+          <Grid item xs={12}>
+            <CarPagination totalPages={data?.totalPages} query={query} />
+          </Grid>
+        </Grid>
+      ) : (
+        <Grid item xs={12} sm={12} md={6} lg={8} container spacing={5}>
+          <Typography variant="h4">No such cars</Typography>
+        </Grid>
+      )}
     </Grid>
   );
 };
@@ -61,11 +73,13 @@ export default cars;
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const make = getAsString(ctx.query.make);
+  let loading = true;
   const [makes, models, pagination] = await Promise.all([
     getMakes(),
     getModels(make),
     getPaginatedCars(ctx.query),
   ]);
+  loading = false;
   // console.log("pagination", pagination);
   return {
     props: {
@@ -74,6 +88,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       cars: pagination.cars,
       totalPages: pagination.totalPages,
       serverQuery: ctx.query,
+      loading,
     },
   };
 };

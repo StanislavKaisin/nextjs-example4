@@ -7,6 +7,8 @@ import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import ButtonBase from "@material-ui/core/ButtonBase";
+import { Button } from "@material-ui/core";
+import Head from "next/head";
 
 interface CarPageProps {
   car: CarModel | null | undefined;
@@ -39,6 +41,9 @@ const CarPage = ({ car }: CarPageProps) => {
   }
   return (
     <div className={classes.root}>
+      <Head>
+        <title>{car.make + "  " + car.model}</title>
+      </Head>
       <Paper className={classes.paper}>
         <Grid container spacing={2}>
           <Grid item>
@@ -71,13 +76,12 @@ const CarPage = ({ car }: CarPageProps) => {
                 </Typography>
               </Grid>
               <Grid item>
-                <Typography
+                <Button
                   // variant="body2"
                   style={{ cursor: "pointer" }}
-                  variant="h6"
                 >
                   Buy now!
-                </Typography>
+                </Button>
               </Grid>
             </Grid>
           </Grid>
